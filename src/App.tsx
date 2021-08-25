@@ -165,13 +165,13 @@ export default function App() {
   return (
     <div className='container max-w-screen2xl mx-auto antialiased'>
       <Helmet>
-        <title>Gebietstool</title>
+        <title>Territory Helper</title>
       </Helmet>
       <h1 className='py-12 font-bold text-md'>
         <span role='img' aria-label='map emoji' className='pr-2'>
           🗺
         </span>{' '}
-        Gebietstool
+        Territory Helper
       </h1>
 
       <div className='flex space-x-32'>
