@@ -3,6 +3,7 @@ import { useFormField } from './hooks/useFormField'
 import { Helmet } from 'react-helmet'
 import { PeopleIcon, TrashIcon } from '@primer/octicons-react'
 import { CSVLink } from 'react-csv'
+import slugify from 'slugify'
 
 type Street = {
   name: string
@@ -219,7 +220,9 @@ export default function App() {
               <CSVLink
                 data={csvData}
                 className='block bg-blue-500 text-white px-4 py-2 font-medium rounded hover:bg-blue-600'
-                filename={territoryName.value.toLowerCase()}
+                filename={slugify(territoryName.value, {
+                  lower: true,
+                })}
               >
                 Download
               </CSVLink>
