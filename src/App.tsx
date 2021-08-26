@@ -2,8 +2,9 @@ import * as React from 'react'
 import { useFormField } from './hooks/useFormField'
 import { Helmet } from 'react-helmet'
 import { PeopleIcon, TrashIcon } from '@primer/octicons-react'
-import { CSVLink } from 'react-csv'
 import slugify from 'slugify'
+import * as FileSaver from 'file-saver'
+import * as xlsx from 'xlsx'
 
 type Street = {
   name: string
@@ -83,9 +84,6 @@ export default function App() {
   const streetname = useFormField()
   const numbers = useFormField()
 
-  // Export
-  const [csvData, setCSVData] = React.useState<string[][] | null>(null)
-
   // Logic
   function addNumberVariant(street: string, number: string) {
     const streetsCopy = [...streets]
@@ -133,12 +131,23 @@ export default function App() {
 
     // Create CSV headers
     const headers = streets.map(s => s.name)
-    let rows: string[][] = [headers]
+    let csvData: string[][] = [headers]
     for (let i = 0; i < maxHouses; i++) {
       const entries = streets.map(street => street.numbers[i] || '')
-      rows = [...rows, entries]
+      csvData = [...csvData, entries]
     }
-    setCSVData(rows)
+
+    // Export to Excel file
+    const fileType =
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+    const fileExtension = '.xlsx'
+    const filename = slugify(territoryName.value, { lower: true })
+
+    const ws = xlsx.utils.json_to_sheet(csvData, { skipHeader: true })
+    const wb = { Sheets: { data: ws }, SheetNames: ['data'] }
+    const excelBuffer = xlsx.write(wb, { bookType: 'xlsx', type: 'array' })
+    const data = new Blob([excelBuffer], { type: fileType })
+    FileSaver.saveAs(data, filename + fileExtension)
   }
 
   // Event handler
@@ -156,7 +165,6 @@ export default function App() {
     }
 
     setStreets(streets => [...streets, street])
-    setCSVData(null)
 
     // Reset the fields
     streetname.reset()
@@ -190,7 +198,7 @@ export default function App() {
 
             <button
               type='submit'
-              className='block mt-10 bg-green-500 text-white px-4 py-2 font-medium rounded hover:bg-green-600'
+              className='block mt-10 bg-green-600 text-white px-4 py-2 font-medium rounded hover:bg-green-700'
             >
               Hinzufügen
             </button>
@@ -210,22 +218,11 @@ export default function App() {
           <div className='flex space-x-4 my-10'>
             {streets.length > 0 && (
               <button
-                className='block bg-green-500 text-white px-4 py-2 font-medium rounded hover:bg-green-600'
+                className='block bg-blue-500 text-white px-4 py-2 font-medium rounded hover:bg-blue-600'
                 onClick={exportCSV}
               >
-                CSV Datei erstellen
+                Zu Excel exportieren
               </button>
-            )}
-            {csvData && (
-              <CSVLink
-                data={csvData}
-                className='block bg-blue-500 text-white px-4 py-2 font-medium rounded hover:bg-blue-600'
-                filename={slugify(territoryName.value, {
-                  lower: true,
-                })}
-              >
-                Download
-              </CSVLink>
             )}
           </div>
         </div>
